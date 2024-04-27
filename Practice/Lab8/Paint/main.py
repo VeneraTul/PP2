@@ -25,7 +25,6 @@ pygame.init()
 screen = pygame.display.set_mode((960, 640))
 another_layer = pygame.Surface((960, 640))
 
-
 done = False
 clock = pygame.time.Clock()
 
@@ -72,10 +71,10 @@ while not done:
 
 
         if event.type == pygame.MOUSEBUTTONUP:
-            if event.button == 1: # левая кнопка мыши
+            if event.button == 1: 
                 isMouseDown = False
                 another_layer.blit(screen, (0, 0))
-            elif event.button == 3: # правая кнопка мыши
+            elif event.button == 3: 
                 LMBpressed = False
                 another_layer.blit(screen, (0, 0))
                 draw_circle(screen, color, (x1, y1), calculate_radius(x1, y1, x2, y2))

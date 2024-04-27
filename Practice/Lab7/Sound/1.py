@@ -10,14 +10,14 @@ white = (255, 255, 255)
 black = (0, 0, 0)
 
 songs = ["song1.mp3", "song2.mp3", "song3.mp3"]
-current_song_index = 0
-pygame.mixer.music.load(songs[current_song_index])
+song_index = 0
+pygame.mixer.music.load(songs[song_index])
 
-running = True
-while running:
+done = False
+while not done:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
-            running = False
+            done = True
         elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE:
                     if pygame.mixer.music.get_busy():
@@ -25,15 +25,17 @@ while running:
                     else:
                         pygame.mixer.music.play()
                 elif event.key == pygame.K_RIGHT:
-                    current_song_index = (current_song_index + 1) % len(songs)
-                    pygame.mixer.music.load(songs[current_song_index])
+                    song_index = (song_index + 1) % len(songs)
+                    pygame.mixer.music.load(songs[song_index])
                     pygame.mixer.music.play()
                 elif event.key == pygame.K_LEFT:
-                    current_song_index = (current_song_index - 1) % len(songs)
-                    pygame.mixer.music.load(songs[current_song_index])
+                    song_index = (song_index - 1) % len(songs)
+                    pygame.mixer.music.load(songs[song_index])
                     pygame.mixer.music.play()
                 elif event.key == pygame.K_s:
-                    pygame.mixer.music.stop()
+                    pygame.mixer.music.pause()
+                elif event.key == pygame.K_v:
+                    pygame.mixer.music.unpause()
    
     screen.fill(white)
 

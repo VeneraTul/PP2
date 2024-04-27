@@ -74,7 +74,7 @@ class Snake:
         return False
 
     def speed_increse(self, level):
-        return FPS + (level * 2)
+        return FPS + level
 
 class Food:
     def __init__(self):
@@ -95,7 +95,7 @@ level = 1
 while not done:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
-            pygame.quit()
+            done = True
             sys.exit()
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_RIGHT:
@@ -124,12 +124,10 @@ while not done:
     food.draw()
 
     if snake.check_collision(food):
-        print("Got food!")
         score += 1
         if score % 5 == 0:
             level += 1
             FPS = snake.speed_increse(level)
-            print("Level up!")
 
         food.move()
     

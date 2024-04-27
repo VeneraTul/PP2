@@ -21,6 +21,8 @@ screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("SNAKE")
 FPS = 5
 clock = pygame.time.Clock()
+food_timer = 0
+num = random.randint(1,5)
 
 CELL = 30
 
@@ -35,7 +37,8 @@ def draw_grid_chess():
     for i in range(HEIGHT // CELL):
         for j in range(WIDTH // CELL):
             pygame.draw.rect(screen, colors[(i + j) % 2], (i * CELL, j * CELL, CELL, CELL))
-
+time_event = pygame.USEREVENT+1
+pygame.time.set_timer(time_event, 1000)
 class Point:
     def __init__(self, x, y) -> None:
         self.x = x
@@ -141,7 +144,7 @@ while not done:
 
     if snake.check_collision(food):
         print("Got food!")
-        score += 1
+        score += num
         if score % 5 == 0:
             level += 1
             FPS = snake.speed_increse(level)

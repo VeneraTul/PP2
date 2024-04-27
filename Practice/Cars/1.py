@@ -11,16 +11,17 @@ FramePerSec = pygame.time.Clock()
 
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
+RED = (255,0,0)
 
-SCREEN_WIDTH = 400
-SCREEN_HEIGHT = 600
+WIDTH = 400
+HEIGHT = 600
 SPEED = 5
 SCORE = 0
 COINS = 0
 
-font = pygame.font.SysFont("Verdana", 60)
-font_small = pygame.font.SysFont("Verdana", 20)
-game_over = font.render("Game Over", True, WHITE)
+font = pygame.font.SysFont("Times New Roman", 60)
+font_small = pygame.font.SysFont("Times New Roman", 20)
+game_over = font.render("Game Over", True, BLACK)
 
 background = pygame.image.load("Images/AnimatedStreet.png")
 
@@ -35,7 +36,7 @@ class Money(pygame.sprite.Sprite):
         a = pygame.image.load("Images/coin.png")
         self.image = pygame.transform.scale(a, (50, 50))
         self.rect = self.image.get_rect()
-        self.rect.center = (random.randint(40, SCREEN_WIDTH - 40), 0)
+        self.rect.center = (random.randint(40,WIDTH - 40), 0)
 
     def move(self):
         global COINS
@@ -43,11 +44,11 @@ class Money(pygame.sprite.Sprite):
         if (self.rect.top > 600):
             self.reset_position() 
             self.rect.top = 0
-            self.rect.center = (random.randint(40, SCREEN_WIDTH - 40), 0)
+            self.rect.center = (random.randint(40,WIDTH - 40), 0)
             
     def reset_position(self):
         while True:
-            self.rect.center = (random.randint(40, SCREEN_WIDTH - 40), 0)
+            self.rect.center = (random.randint(40,WIDTH - 40), 0)
             if not pygame.sprite.spritecollideany(self, enemies):
                 break
 
@@ -58,7 +59,7 @@ class Enemy(pygame.sprite.Sprite):
         super().__init__()
         self.image = pygame.image.load("Images/Enemy.png")
         self.rect = self.image.get_rect()
-        self.rect.center = (random.randint(40, SCREEN_WIDTH - 40), 0)
+        self.rect.center = (random.randint(40,WIDTH - 40), 0)
 
     def move(self):
         global SCORE
@@ -66,7 +67,7 @@ class Enemy(pygame.sprite.Sprite):
         if (self.rect.top > 600):
             SCORE += 1
             self.rect.top = 0
-            self.rect.center = (random.randint(40, SCREEN_WIDTH - 40), 0)
+            self.rect.center = (random.randint(40,WIDTH - 40), 0)
 
 
 class Player(pygame.sprite.Sprite):
@@ -86,7 +87,7 @@ class Player(pygame.sprite.Sprite):
         if self.rect.left > 0:
             if pressed_keys[K_LEFT]:
                 self.rect.move_ip(-5, 0)
-        if self.rect.right < SCREEN_WIDTH:
+        if self.rect.right < WIDTH:
             if pressed_keys[K_RIGHT]:
                 self.rect.move_ip(5, 0)
 
@@ -130,7 +131,7 @@ while True:
         if pygame.sprite.spritecollideany(P1, enemies):
             time.sleep(0.5)
 
-            DISPLAYSURF.fill(BLACK)
+            DISPLAYSURF.fill(RED)
             DISPLAYSURF.blit(game_over, (30, 250))
             DISPLAYSURF.blit(f_score, (100, 500))
             DISPLAYSURF.blit(f_coins, (200, 500))
