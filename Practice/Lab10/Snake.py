@@ -1,9 +1,37 @@
 import pygame, psycopg2
 import random
 from config import config
+import sys
+
+def delete_by_name(name):
+    sql = f"DELETE FROM snake WHERE name = '{name}'"
+    insert(sql)
+
+
+'''def create_table():
+    SQL = (
+        """CREATE TABLE IF NOT EXISTS snake (
+        name VARCHAR(256) NOT NULL,
+        score INTEGER NOT NULL,
+        level INTEGER NOT NULL
+        )
+          """
+    )
+    
+    try:
+        config = psycopg2.connect(**config())
+        query = config.cursor()
+        query.execute(SQL)
+        query.close()
+        config.commit()
+
+    except Exception as Error:
+        print(str(Error))
+
+ 
+create_table()'''
 
 def insert(sql):
-    conn = None
     try:
         params = config()
         conn = psycopg2.connect(**params)
@@ -13,9 +41,6 @@ def insert(sql):
         cursor.close()
     except (Exception, psycopg2.DatabaseError) as error:
         print(error)
-    finally:
-        if conn is not None:
-            conn.close()
 
 def check(name):
     sql = f"SELECT name FROM snake WHERE name = '{name}'"
@@ -40,189 +65,146 @@ if check(name) == False:
 
 pygame.init()
 
-WINDOW_WIDTH, WINDOW_HEIGHT = 500, 500
-screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))  # Surface
-running = True
-BLACK = (0, 0, 0)
-WHITE = (255, 255, 255)
-WHITE_2 = (100, 100, 100)
-BLUE = (0, 0, 200)
-GREEN = (0, 150, 0)
-RED = (150, 0, 0)
-time = 0
+# Color palette
+colorBLACK = (0, 0, 0)
+colorGRAY = (200, 200, 200)
+colorWHITE = (255, 255, 255)
+colorRED = (255, 0, 0)
+colorGREEN = (0, 255, 0)
+colorBLUE = (0, 0, 255)
+colorYELLOW = (255, 255, 0)
 
-BLOCK_SIZE = 20
+WIDTH = 600
+HEIGHT = 600
 
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
+pygame.display.set_caption("SNAKE")
+FPS = 5
 clock = pygame.time.Clock()
-FPS = 6
+
+CELL = 30
 
 def draw_grid():
-  for i in range(0, WINDOW_WIDTH, BLOCK_SIZE):
-    for j in range(0, WINDOW_HEIGHT, BLOCK_SIZE):
-      pygame.draw.rect(screen, WHITE_2, (i, j, BLOCK_SIZE, BLOCK_SIZE), 1)
-  
+    for i in range(HEIGHT // CELL):
+        for j in range(WIDTH // CELL):
+            pygame.draw.rect(screen, colorGRAY, (i * CELL, j * CELL, CELL, CELL), 1)
 
-class Wall:
-  def __init__(self):
-    self.body = []
-    self.load_wall()
-  
-  def load_wall(self):
-    with open(f'level1.txt', 'r') as f:
-      wall_body = f.readlines()
-    
-    for i, line in enumerate(wall_body):
-      for j, value in enumerate(line):
-        if value == '#':
-          self.body.append([j, i])
-  
-  def draw(self): 
-    for x, y in self.body:
-      pygame.draw.rect(screen, RED, (x * BLOCK_SIZE, y * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE))
+def draw_grid_chess():
+    colors = [colorWHITE, colorGRAY]
+
+    for i in range(HEIGHT // CELL):
+        for j in range(WIDTH // CELL):
+            pygame.draw.rect(screen, colors[(i + j) % 2], (i * CELL, j * CELL, CELL, CELL))
 
 class Point:
-  def __init__(self, _x, _y):
-    self.x = _x
-    self.y = _y
-
-class Block:
-    def __init__(self, x, y):
+    def __init__(self, x, y) -> None:
         self.x = x
         self.y = y
-        self.location = Point(self.x, self.y)
-        
-    def draw(self):
-        point = self.location
-        pygame.draw.rect(screen, RED, (point.x * BLOCK_SIZE, point.y * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE))
-        
-    
-class Food:
-  def __init__(self):
-      
-      self.generate_random_pos()
-  
-  def my_round(self, value, base=BLOCK_SIZE):
-    return base * round(value / base)
-  
-  def generate_random_pos(self):
-    self.x = self.my_round(random.randint(0, WINDOW_WIDTH - BLOCK_SIZE))
-    self.y = self.my_round(random.randint(0, WINDOW_HEIGHT - BLOCK_SIZE))
-
-  def respawn(self):
-    self.generate_random_pos()
-  
-  def draw(self):
-    pygame.draw.rect(screen, BLUE, (self.x, self.y, BLOCK_SIZE, BLOCK_SIZE))
-
 
 class Snake:
-  def __init__(self):
-      self.body = [[10, 10], [11, 10],]
-      self.dx = 1
-      self.dy = 0
-  
-  def draw(self):
-    for i, (x, y) in enumerate(self.body):
-      color = RED if i == 0 else GREEN
-      pygame.draw.rect(screen, color, (x * BLOCK_SIZE, y * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE))
-  
-  def collide_self(self):  
-        global running
-        if self.body[0] in self.body[2:]:
-          running = False
-  
-  def move(self):
-    for i in range(len(self.body) - 1, 0, -1):
-      self.body[i][0] = self.body[i - 1][0]
-      self.body[i][1] = self.body[i - 1][1]
+    def __init__(self):
+        self.body = [Point(10, 11), Point(10, 12), Point(10, 13)]
+        self.dx = 1
+        self.dy = 0
 
-    self.body[0][0] += self.dx
-    self.body[0][1] += self.dy
-
-    if self.body[0][0] * BLOCK_SIZE > WINDOW_WIDTH:
-            self.body[0][0] = 0
+    def move(self):
+        for i in range(len(self.body) - 1, 0, -1):
+            self.body[i].x = self.body[i - 1].x
+            self.body[i].y = self.body[i - 1].y
         
-    if self.body[0][1] * BLOCK_SIZE > WINDOW_HEIGHT:
-          self.body[0][1] = 0
+        self.body[0].x += self.dx
+        self.body[0].y += self.dy
 
-    if self.body[0][0]< 0:
-        self.body[0][0] = WINDOW_WIDTH / BLOCK_SIZE
-    
-    if self.body[0][1] < 0:
-        self.body[0][1] =WINDOW_HEIGHT/ BLOCK_SIZE
-  
+    def draw(self):
+        head = self.body[0]
+        pygame.draw.rect(screen, colorRED, (head.x * CELL, head.y * CELL, CELL, CELL))
+        for segment in self.body[1:]:
+            pygame.draw.rect(screen, colorYELLOW, (segment.x * CELL, segment.y * CELL, CELL, CELL))
 
+    def check_collision(self, food):
+        head = self.body[0]
+        if head.x == food.pos.x and head.y == food.pos.y:
+            self.body.append(Point(head.x, head.y))
+            return True
+        return False
+
+    def check_border_collision(self):
+        head = self.body[0]
+        if head.x < 0 or head.x >= WIDTH // CELL or head.y < 0 or head.y >= HEIGHT // CELL:
+            return True
+        return False
+
+    def speed_increse(self, level):
+        return FPS + level
+
+class Food:
+    def __init__(self):
+        self.pos = Point(15, 15)
+
+    def move(self):
+        self.pos = Point(random.randint(0, WIDTH // CELL - 1), random.randint(0, HEIGHT // CELL - 1))
+
+    def draw(self):
+        pygame.draw.rect(screen, colorGREEN, (self.pos.x * CELL, self.pos.y * CELL, CELL, CELL))
+
+done = False
 snake = Snake()
 food = Food()
-wall = Wall()
-block = Block(0, 0)
-level = 1
 score = 0
+level = 1
 
-while running:
-  for event in pygame.event.get():
-    if event.type == pygame.QUIT:
-      running = False
-    if event.type == pygame.KEYDOWN:
-      if event.key == pygame.K_RIGHT:
-        snake.dx = 1
-        snake.dy = 0
-      if event.key == pygame.K_LEFT:
-        snake.dx = -1
-        snake.dy = 0
-      if event.key == pygame.K_UP:
-        snake.dx = 0
-        snake.dy = -1
-      if event.key == pygame.K_DOWN:
-        snake.dx = 0
-        snake.dy = 1
-     
-  wallsCoor = open(f"level1.txt", 'r').readlines()
-  walls = []
-  for i, line in enumerate(wallsCoor):
-      for j, each in enumerate(line):
-          if each == "#":
-            walls.append(Block(j, i))  
+while not done:
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            done = True
+            sys.exit()
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_RIGHT:
+                snake.dx = 1
+                snake.dy = 0
+            if event.key == pygame.K_LEFT:
+                snake.dx = -1
+                snake.dy = 0
+            if event.key == pygame.K_UP:
+                snake.dx = 0
+                snake.dy = -1
+            if event.key == pygame.K_DOWN:
+                snake.dx = 0
+                snake.dy = 1
 
-  for block in walls:
-    block.draw()
-    if food.x == block.x and food.y == block.y:
-      food.respawn()
-    if snake.body[0][0] == block.x and snake.body[0][1] == block.y:
-      saved_score = score
-      sql = f"UPDATE snake SET score = {saved_score} WHERE name = '{name}'"
-      insert(sql)
-      running = False    
-  
-  snake.move()    
+    draw_grid_chess()
+
+    snake.move()
+    if snake.check_border_collision():
+        saved_score = score
+        sql = f"UPDATE snake SET score = {saved_score} WHERE name = '{name}'"
+        insert(sql)
+        pygame.quit()
+        sys.exit()
+
+        
+
+    snake.draw()
+    food.draw()
+
+    if snake.check_collision(food):
+        score += 1
+        if score % 5 == 0:
+            level += 1
+            saved_level = level
+            sql = f"UPDATE snake SET level = {saved_level} WHERE name = '{name}'"
+            insert(sql)
+            FPS = snake.speed_increse(level)
+
+        food.move()
     
-  screen.fill(WHITE)
-  
-  draw_grid()
-  snake.draw()
-  food.draw()
-  wall.draw()
-  snake.collide_self()
-
-
-  
-  
-  if snake.body[0][0] * BLOCK_SIZE == food.x and snake.body[0][1] * BLOCK_SIZE == food.y:
-    snake.body.append([0, 0])
-    food.generate_random_pos()
-    score += random.randint(1, 3)
+    font = pygame.font.SysFont(None, 24)
+    score_text = font.render(f"Score: {score}", True, colorBLACK)
+    level_text = font.render(f"Level: {level}", True, colorBLACK)
+    screen.blit(score_text, (10, 10))
+    screen.blit(level_text, (10, 30))
     
 
-  time += FPS % 4
-  
-  if time % 100 == 0 and time != 0:
-    food.respawn()
-
-
-  font = pygame.font.Font(None, 30)
-  text = font.render(f'Score: {score}', True, (255, 0, 0))
-  font_l = pygame.font.Font(None, 30)
-  screen.blit(text, (20, 20))
-  
-  pygame.display.update()
-  clock.tick(FPS)
+    pygame.display.flip()
+    clock.tick(FPS)
+    

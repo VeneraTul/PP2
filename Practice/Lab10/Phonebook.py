@@ -2,7 +2,7 @@ import psycopg2
 from config1 import params
 import csv
 
-a = int(input('1-Add     2-Delete     3-Update     4-Show     5-csv \n'))
+a = int(input('1-Add     2-Delete     3-Update     4-csv \n'))
 
 
 def create_table():
@@ -94,84 +94,6 @@ def update_by_telephone(name, telephone):
         print(str(Error))
 
 
-def show_sort_by_name():
-    SQL = "SELECT * FROM book order by name ASC"
-    try:
-        config = psycopg2.connect(**params)
-        query = config.cursor()
-        query.execute(SQL)
-        res = query.fetchall()
-        query.close()
-        config.commit()
-
-        text = "Name                     Telephone"
-        print("\033[36m {}".format(text))
-        print("\033[0m", end='')
-
-        for row in res:
-            l = len(row[0])
-            print(str(row[0]), end="")
-            for i in range(24 - l):
-                print(' ', end="")
-            print(' ', end="")
-            print(str(row[1]))
-
-
-    except Exception as Error:
-        print(str(Error))
-
-
-def show_sort_by_telephone():
-    SQL = "SELECT * FROM book order by telephone ASC"
-    try:
-        config = psycopg2.connect(**params)
-        query = config.cursor()
-        query.execute(SQL)
-        res = query.fetchall()
-        query.close()
-        config.commit()
-
-        text = "Name                     Telephone"
-        print("\033[36m {}".format(text))
-        print("\033[0m", end='')
-
-        for row in res:
-            l = len(row[0])
-            print(str(row[0]), end="")
-            for i in range(25 - l):
-                print(' ', end="")
-            print(str(row[1]))
-
-
-    except Exception as Error:
-        print(str(Error))
-
-
-def show_sort_by_date():
-    SQL = "SELECT * FROM book"
-    try:
-        config = psycopg2.connect(**params)
-        query = config.cursor()
-        query.execute(SQL)
-        res = query.fetchall()
-        query.close()
-        config.commit()
-
-        text = "Name                     Telephone"
-        print("\033[36m {}".format(text))
-        print("\033[0m", end='')
-
-        for row in res:
-            l = len(row[0])
-            print(str(row[0]), end="")
-            for i in range(25 - l):
-                print(' ', end="")
-            print(str(row[1]))
-
-
-    except Exception as Error:
-        print(str(Error))
-
 
 if a == 1:
     name = input('Write your name:   ')
@@ -200,16 +122,8 @@ if a == 3:
         name = input('Write your new name:     ')
         update_by_telephone(name, telephone)
 
-if a == 4:
-    b = int(input('1-Sort by name     2-Sort by telephone     3-Sort by date\n'))
-    if b == 1:
-        show_sort_by_name()
-    if b == 2:
-        show_sort_by_telephone()
-    if b == 3:
-        show_sort_by_date()
 
-if a == 5:
+if a == 4:
     with open('pb.csv') as f:
         r = csv.reader(f)
         for i in r:
